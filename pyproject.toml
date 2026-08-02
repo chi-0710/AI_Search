@@ -1,0 +1,146 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-search-agent"
+version = "0.1.0"
+description = "基于 LangGraph 的 AI 技术调研 Agent"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    # LangChain 统一模型初始化接口
+    "langchain>=1,<2",
+
+    # LangGraph 工作流编排
+    "langgraph>=1,<2",
+
+    # DeepSeek Provider 适配
+    "langchain-deepseek>=1,<2",
+
+    # 数据结构与配置管理
+    "pydantic>=2,<3",
+    "pydantic-settings>=2,<3",
+    "python-dotenv>=1,<2",
+
+    # 后续搜索工具需要
+    "httpx>=0.28,<1",
+    "tenacity>=9,<10",
+]
+
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9,<10",
+    "pytest-asyncio>=1,<2",
+    "ruff>=0.15,<1",
+    "mypy>=1.14,<2",
+    "pre-commit>=4,<5",
+]
+
+# 在实现 Planner Agent 并确定使用 OpenAI Provider 后再安装
+openai = [
+    "langchain-openai>=1.1,<2",
+]
+
+
+[project.urls]
+Repository = "https://github.com/chi-0710/AI_Search"
+
+
+# 告诉 setuptools：需要打包 app 目录下的 Python 包
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+
+# ============================================================
+# pytest 配置
+# ============================================================
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+asyncio_mode = "auto"
+
+markers = [
+    "unit: 不访问真实外部服务的单元测试",
+    "integration: 涉及多个模块的集成测试",
+    "external: 需要真实网络或外部 API 的测试",
+]
+
+
+# ============================================================
+# Ruff 代码检查与格式化配置
+# ============================================================
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle 错误
+    "F",    # Pyflakes
+    "I",    # import 排序
+    "UP",   # Python 语法升级建议
+    "B",    # 常见代码缺陷
+    "SIM",  # 可以简化的代码
+    "RUF",  # Ruff 自身规则
+]
+
+# FastAPI 后续可能在函数默认参数中使用 Depends()
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+
+# ============================================================
+# mypy 类型检查配置
+# ============================================================
+
+[tool.mypy]
+python_version = "3.11"
+files = ["app"]
+
+plugins = ["pydantic.mypy"]
+
+check_untyped_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+strict_equality = true
+show_error_codes = true
+pretty = true
+
+exclude = [
+    "migrations/",
+]
+
+
+# ============================================================
+# Pydantic mypy 插件配置
+# ============================================================
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
